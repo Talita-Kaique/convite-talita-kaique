@@ -1,0 +1,772 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Talita &amp; Kaique</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Yellowtail&family=Poppins:wght@300;400;500;600&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #f6f2e9;
+    --card-bg: #fbf8f1;
+    --frame: #8a9a78;
+    --sage: #6f7f5f;
+    --sage-dark: #4f5c44;
+    --gold: #c3a15f;
+    --ink: #3c3a32;
+    --ink-soft: #6b6858;
+    --line: #d8cfb8;
+    --danger: #a8503f;
+    --ok: #4f7a52;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Poppins', system-ui, sans-serif;
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    padding: 24px 12px 64px;
+  }
+  #app{
+    width:100%;
+    max-width:560px;
+    display:flex;
+    flex-direction:column;
+    gap:28px;
+  }
+  .card{
+    background: var(--card-bg);
+    border:1px solid var(--line);
+    border-radius:4px;
+    padding: 34px 26px;
+    position:relative;
+    overflow:hidden;
+  }
+  .frame{
+    border:1.5px solid var(--frame);
+    border-radius:2px;
+    padding: 40px 24px;
+    position:relative;
+  }
+  .leaf-corner{
+    position:absolute;
+    top:-18px; right:-18px;
+    width:150px; height:150px;
+    opacity:0.9;
+    pointer-events:none;
+  }
+  .center{ text-align:center; }
+  .kicker{
+    font-size:14px;
+    line-height:1.7;
+    color: var(--ink-soft);
+    max-width:400px;
+    margin: 0 auto 22px;
+  }
+  .names{
+    font-family:'Yellowtail', cursive;
+    color: var(--sage-dark);
+    font-size: 52px;
+    line-height:1.25;
+    margin: 6px 0;
+  }
+  .amp{ color: var(--gold); font-size: 34px; }
+  .date-row{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    gap:10px;
+    margin: 20px 0 26px;
+  }
+  .date-num{
+    font-family:'Playfair Display', serif;
+    font-weight:700;
+    font-size: 40px;
+    color: var(--gold);
+  }
+  .date-sep{ color: var(--line); font-size:22px; }
+  .divider{
+    width:120px; height:1px; background:var(--line); margin: 18px auto;
+  }
+  .event-block{ font-size:14.5px; line-height:1.6; margin: 10px 0; }
+  .event-time{ font-weight:600; color:var(--sage-dark); }
+  .verse{ font-size:13px; color:var(--ink-soft); margin-top:22px; font-style:italic; line-height:1.6; }
+  h2.section-title{
+    font-family:'Playfair Display', serif;
+    color: var(--sage-dark);
+    font-size:22px;
+    margin: 0 0 4px;
+    text-align:center;
+  }
+  .section-sub{ text-align:center; color:var(--ink-soft); font-size:13px; margin-bottom:20px; }
+  .addr{
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:16px 18px;
+    margin-bottom:14px;
+  }
+  .addr-label{ font-weight:600; color:var(--sage-dark); font-size:14px; margin-bottom:4px; }
+  .addr-text{ font-size:13.5px; color:var(--ink-soft); line-height:1.5; margin-bottom:10px; }
+  .btn{
+    display:inline-block;
+    border:1px solid var(--sage);
+    color: var(--sage-dark);
+    background: transparent;
+    border-radius:20px;
+    padding:8px 16px;
+    font-size:13px;
+    text-decoration:none;
+    cursor:pointer;
+    font-family:'Poppins', sans-serif;
+  }
+  .btn:hover{ background: var(--sage); color:#fff; }
+  .btn-primary{
+    background: var(--sage-dark);
+    border-color: var(--sage-dark);
+    color:#fff;
+    width:100%;
+    padding:12px 16px;
+    font-size:15px;
+    border-radius:24px;
+    font-weight:500;
+  }
+  .btn-primary:hover{ background: var(--sage); }
+  .btn-primary:disabled{ opacity:0.6; cursor:default; }
+  .countdown{
+    display:flex; justify-content:center; gap:14px; flex-wrap:wrap;
+  }
+  .cbox{
+    text-align:center; min-width:64px;
+    background: var(--card-bg);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:12px 8px;
+  }
+  .cbox .n{ font-family:'Playfair Display',serif; font-size:26px; color:var(--sage-dark); font-weight:700; }
+  .cbox .l{ font-size:10.5px; letter-spacing:0.06em; text-transform:uppercase; color:var(--ink-soft); margin-top:2px; }
+  label.field-label{ display:block; font-size:13px; font-weight:500; color:var(--ink); margin: 16px 0 6px; }
+  input[type=text], input[type=number], textarea, input[type=password]{
+    width:100%;
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:10px 12px;
+    font-family:'Poppins', sans-serif;
+    font-size:14px;
+    color:var(--ink);
+    background:#fff;
+  }
+  textarea{ resize:vertical; min-height:70px; }
+  .toggle-row{ display:flex; gap:10px; margin-top:4px; }
+  .toggle-btn{
+    flex:1;
+    text-align:center;
+    padding:10px;
+    border:1px solid var(--line);
+    border-radius:8px;
+    cursor:pointer;
+    font-size:14px;
+    user-select:none;
+  }
+  .toggle-btn.active-yes{ background: var(--sage-dark); color:#fff; border-color:var(--sage-dark); }
+  .toggle-btn.active-no{ background: var(--danger); color:#fff; border-color:var(--danger); }
+  .guest-name{ text-align:center; font-family:'Playfair Display', serif; font-size:20px; color:var(--sage-dark); margin-bottom:4px; }
+  .note{ font-size:12px; color:var(--ink-soft); margin-top:6px; }
+  .msg-box{
+    border-radius:8px; padding:12px 14px; font-size:13.5px; margin-top:14px; line-height:1.5;
+  }
+  .msg-ok{ background:#eef4ec; color: var(--ok); border:1px solid #cfe3cb; }
+  .msg-warn{ background:#fbeee9; color: var(--danger); border:1px solid #f0d2c7; }
+  .msg-info{ background:#f1eee2; color: var(--ink-soft); border:1px solid var(--line); }
+  .datalist-wrap{ position:relative; }
+  table.admin-table{ width:100%; border-collapse:collapse; font-size:12.5px; }
+  table.admin-table th, table.admin-table td{ border-bottom:1px solid var(--line); padding:8px 6px; text-align:left; vertical-align:top; }
+  table.admin-table th{ color:var(--ink-soft); font-weight:600; font-size:11px; text-transform:uppercase; letter-spacing:0.03em; }
+  .status-pill{ display:inline-block; padding:2px 8px; border-radius:12px; font-size:11px; font-weight:600; }
+  .status-yes{ background:#eef4ec; color:var(--ok); }
+  .status-no{ background:#fbeee9; color:var(--danger); }
+  .status-pending{ background:#f1eee2; color:var(--ink-soft); }
+  .stats-grid{ display:grid; grid-template-columns:repeat(2,1fr); gap:10px; margin-bottom:20px; }
+  .stat{ background:#fff; border:1px solid var(--line); border-radius:10px; padding:12px; text-align:center; }
+  .stat .n{ font-family:'Playfair Display',serif; font-size:24px; color:var(--sage-dark); font-weight:700; }
+  .stat .l{ font-size:10.5px; color:var(--ink-soft); text-transform:uppercase; letter-spacing:0.04em; }
+  .link-row{ display:flex; gap:6px; align-items:center; margin-bottom:6px; }
+  .link-row .lbl{ flex:0 0 150px; font-size:12.5px; }
+  .link-row input{ flex:1; font-size:11px; padding:6px 8px; }
+  .top-link{ text-align:center; font-size:12px; margin-top:-8px; }
+  .top-link a{ color: var(--ink-soft); text-decoration:underline; cursor:pointer; }
+  .admin-table-wrap{ overflow-x:auto; }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script id="rsvp-state" type="application/json">{}</script>
+<script>
+(function(){
+  "use strict";
+
+  var ORIGINAL_HTML = document.documentElement.outerHTML;
+  var STATE_EL = document.getElementById('rsvp-state');
+  var STATE_RAW = STATE_EL.textContent;
+  var STATE;
+  try { STATE = JSON.parse(STATE_RAW); } catch(e){ STATE = {}; }
+
+  var PIN = "16102026";
+
+  var GUESTS = [
+    {slug:"cris-rodrigo", names:["Cris","Rodrigo"]},
+    {slug:"cristiano-natalia", names:["Cristiano","Natália"]},
+    {slug:"leo-amanda", names:["Léo","Amanda"]},
+    {slug:"tia-maria", names:["Tia Maria"]},
+    {slug:"tia-tereza", names:["Tia Tereza"]},
+    {slug:"tia-cida", names:["Tia Cida"]},
+    {slug:"tia-joao", names:["Tia João"]},
+    {slug:"goreti-master", names:["Goreti","Master"]},
+    {slug:"bruna", names:["Bruna"]},
+    {slug:"tiao-nena-rafaela", names:["Tião","Nena","Rafaela"]},
+    {slug:"tonho-nice", names:["Tio Tonho","Nice"]},
+    {slug:"sarita-filhos", names:["Sarita"]},
+    {slug:"fernanda", names:["Fernanda"]},
+    {slug:"gabriela-luiz", names:["Gabriela","Luiz"]},
+    {slug:"emilene-daniel", names:["Emilene","Daniel"]},
+    {slug:"eliane-breno-pedro", names:["Eliane","Breno","Pedro"]},
+    {slug:"marcilene-paulo", names:["Marcilene","Paulo"]},
+    {slug:"vo-joao", names:["Vô João"]},
+    {slug:"alessandra-jeferson-joaogabriel", names:["Alessandra","Jeferson","João Gabriel"]},
+    {slug:"vo-nascimento", names:["Vô Nascimento"]},
+    {slug:"juliana", names:["Juliana"]},
+    {slug:"nilza", names:["Nilza"]},
+    {slug:"gustavo-gabi", names:["Gustavo","Gabi"]},
+    {slug:"thiago", names:["Thiago"]},
+    {slug:"tayna", names:["Tayna"]},
+    {slug:"candoca", names:["Candoca"]},
+    {slug:"rita-odair", names:["Rita","Odair"]},
+    {slug:"marcio", names:["Márcio"]},
+    {slug:"marcos-janaina", names:["Marcos","Janaina"]},
+    {slug:"darli-charles", names:["Darli","Charles"]}
+  ];
+  var GUEST_BY_SLUG = {};
+  GUESTS.forEach(function(g){ GUEST_BY_SLUG[g.slug] = g; });
+
+  function formatNames(names){
+    if (!names || !names.length) return "";
+    if (names.length === 1) return names[0];
+    if (names.length === 2) return names[0] + " e " + names[1];
+    return names.slice(0, -1).join(", ") + " e " + names[names.length - 1];
+  }
+  function guestLabel(guest){ return formatNames(guest.names); }
+
+  var ACCENT_MAP = {"á":"a","à":"a","ã":"a","â":"a","ä":"a","é":"e","è":"e","ê":"e","ë":"e","í":"i","ì":"i","î":"i","ï":"i","ó":"o","ò":"o","õ":"o","ô":"o","ö":"o","ú":"u","ù":"u","û":"u","ü":"u","ç":"c","ñ":"n"};
+  function removeAccents(s){
+    var out = "";
+    for (var i=0;i<s.length;i++){
+      var ch = s.charAt(i);
+      out += ACCENT_MAP[ch] || ch;
+    }
+    return out;
+  }
+  function slugify(s){
+    var base = removeAccents((s||"").toString().trim().toLowerCase());
+    var cleaned = base.replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"");
+    return cleaned || "convidado";
+  }
+
+  function esc(s){
+    return (s===undefined||s===null?"":String(s))
+      .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+  }
+
+  function buildDoc(newState){
+    var newJson = JSON.stringify(newState);
+    var idx = ORIGINAL_HTML.indexOf(STATE_RAW);
+    if (idx === -1){
+      var reIdx = ORIGINAL_HTML.indexOf('id="rsvp-state" type="application/json">');
+      if (reIdx !== -1){
+        var start = reIdx + 'id="rsvp-state" type="application/json">'.length;
+        var end = ORIGINAL_HTML.indexOf('<' + '/script>', start);
+        return "<!doctype html>\n" + ORIGINAL_HTML.slice(0,start) + newJson + ORIGINAL_HTML.slice(end);
+      }
+      throw new Error("state anchor not found");
+    }
+    return "<!doctype html>\n" + ORIGINAL_HTML.slice(0, idx) + newJson + ORIGINAL_HTML.slice(idx + STATE_RAW.length);
+  }
+
+  function mapsUrl(addr){
+    return "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(addr);
+  }
+
+  var ADDR_CIVIL = "Avenida Tiradentes, 83 - Cambuí - MG";
+  var ADDR_JANTAR = "Avenida Vereador Benedito Rodrigues, 126 - Córrego do Bom Jesus - MG (Café com Flor)";
+  var WEDDING_DATE = new Date(2026,9,16,16,30,0);
+  var RSVP_DEADLINE = new Date(2026,9,2,23,59,59);
+
+  function formatDateBR(d){
+    var dd = String(d.getDate()).padStart(2,"0");
+    var mm = String(d.getMonth()+1).padStart(2,"0");
+    return dd + "/" + mm + "/" + d.getFullYear();
+  }
+
+  var params = new URLSearchParams(location.search);
+  var mode = params.get("painel") === "1" ? "admin" : "guest";
+  var guestSlugParam = params.get("g") || "";
+
+  var artifactApi = null;
+  var artifactReady = (function(){
+    if (!window.claude || !window.claude.use){ return Promise.resolve(null); }
+    return window.claude.use("artifact").catch(function(){ return null; });
+  })();
+  artifactReady.then(function(a){ artifactApi = a; });
+
+  function leafSvg(){
+    return '<svg class="leaf-corner" viewBox="0 0 150 150" xmlns="http://www.w3.org/2000/svg">'
+      + '<g fill="none" stroke="' + "#8a9a78" + '" stroke-width="2">'
+      + '<path d="M140 10 C110 20 90 50 85 90" />'
+      + '<path d="M130 20 C105 35 92 60 90 85" />'
+      + '<ellipse cx="118" cy="34" rx="14" ry="7" fill="#c7d3b6" stroke="none" transform="rotate(-35 118 34)"/>'
+      + '<ellipse cx="103" cy="52" rx="13" ry="6.5" fill="#b9c8a4" stroke="none" transform="rotate(-45 103 52)"/>'
+      + '<ellipse cx="94" cy="72" rx="12" ry="6" fill="#c7d3b6" stroke="none" transform="rotate(-55 94 72)"/>'
+      + '<circle cx="128" cy="24" r="9" fill="#f6f2e9" stroke="#c3a15f" />'
+      + '</g></svg>';
+  }
+
+  function renderInviteCard(){
+    return ''
+      + '<div class="card frame">'
+      + leafSvg()
+      + '<div class="center">'
+      + '<p class="kicker">Com a bênção de Deus e o carinho de nossas famílias, estamos felizes em convidá-los para celebrar conosco o início de uma nova etapa de nossas vidas.</p>'
+      + '<div class="names">Talita<div class="amp">&amp;</div>Kaique</div>'
+      + '<div class="date-row"><span class="date-num">16</span><span class="date-sep">|</span><span class="date-num">10</span><span class="date-sep">|</span><span class="date-num">26</span></div>'
+      + '<div class="event-block"><span class="event-time">16h30</span> — Casamento Civil<br>Avenida Tiradentes, 83 - Cambuí - MG</div>'
+      + '<div class="divider"></div>'
+      + '<div class="event-block"><span class="event-time">18h</span> — Jantar de comemoração<br>Avenida Vereador Benedito Rodrigues, 126<br>Córrego do Bom Jesus - MG (Café com Flor)</div>'
+      + '<p class="verse">&ldquo;O amor é paciente, o amor é bondoso...&rdquo;<br>1 Coríntios 13:4</p>'
+      + '</div></div>';
+  }
+
+  function renderDetails(){
+    return ''
+      + '<div class="card">'
+      + '<h2 class="section-title">Local</h2>'
+      + '<p class="section-sub">Toque para abrir no mapa</p>'
+      + '<div class="addr"><div class="addr-label">Casamento Civil · 16h30</div>'
+      + '<div class="addr-text">' + esc(ADDR_CIVIL) + '</div>'
+      + '<a class="btn" href="' + mapsUrl(ADDR_CIVIL) + '" target="_blank" rel="noopener">Ver no mapa</a></div>'
+      + '<div class="addr"><div class="addr-label">Jantar de comemoração · 18h</div>'
+      + '<div class="addr-text">' + esc(ADDR_JANTAR) + '</div>'
+      + '<a class="btn" href="' + mapsUrl(ADDR_JANTAR) + '" target="_blank" rel="noopener">Ver no mapa</a></div>'
+      + '</div>';
+  }
+
+  function renderCountdown(){
+    return ''
+      + '<div class="card center">'
+      + '<h2 class="section-title">Contagem regressiva</h2>'
+      + '<div class="countdown" id="countdown-boxes">'
+      + '<div class="cbox"><div class="n" id="cd-d">-</div><div class="l">dias</div></div>'
+      + '<div class="cbox"><div class="n" id="cd-h">-</div><div class="l">horas</div></div>'
+      + '<div class="cbox"><div class="n" id="cd-m">-</div><div class="l">min</div></div>'
+      + '<div class="cbox"><div class="n" id="cd-s">-</div><div class="l">seg</div></div>'
+      + '</div></div>';
+  }
+
+  function startCountdown(){
+    function tick(){
+      var now = new Date();
+      var diff = WEDDING_DATE.getTime() - now.getTime();
+      var d = document.getElementById("cd-d");
+      if (!d) return;
+      if (diff <= 0){
+        document.getElementById("cd-d").textContent = "0";
+        document.getElementById("cd-h").textContent = "0";
+        document.getElementById("cd-m").textContent = "0";
+        document.getElementById("cd-s").textContent = "0";
+        return;
+      }
+      var s = Math.floor(diff/1000);
+      var days = Math.floor(s/86400); s -= days*86400;
+      var hours = Math.floor(s/3600); s -= hours*3600;
+      var mins = Math.floor(s/60); s -= mins*60;
+      document.getElementById("cd-d").textContent = days;
+      document.getElementById("cd-h").textContent = hours;
+      document.getElementById("cd-m").textContent = mins;
+      document.getElementById("cd-s").textContent = s;
+      window.__cdTimer = setTimeout(tick, 1000);
+    }
+    if (window.__cdTimer) clearTimeout(window.__cdTimer);
+    tick();
+  }
+
+  function findGuestBySlug(slug){ return GUEST_BY_SLUG[slug]; }
+
+  function renderRsvpSection(){
+    var slug = guestSlugParam;
+    var guest = findGuestBySlug(slug);
+    var existing = slug ? STATE[slug] : null;
+
+    if (!guest && slug){
+      var typedName = params.get("nome") || "";
+      guest = { slug: slug, names: typedName ? [typedName] : [], adhoc:true };
+    }
+
+    var html = '<div class="card" id="rsvp-card">';
+    html += '<h2 class="section-title">Confirmar presença</h2>';
+    var deadlinePassed = new Date() > RSVP_DEADLINE;
+    html += deadlinePassed
+      ? '<p class="section-sub" style="color:var(--danger);">O prazo de confirmação (' + formatDateBR(RSVP_DEADLINE) + ') já passou, mas você ainda pode confirmar.</p>'
+      : '<p class="section-sub">Por favor, confirme até <b>' + formatDateBR(RSVP_DEADLINE) + '</b>.</p>';
+
+    if (!slug){
+      html += '<p class="section-sub">Não encontramos seu convite pelo link. Digite seu nome para localizar seu convite:</p>';
+      html += '<div class="datalist-wrap">';
+      html += '<input type="text" id="name-search" placeholder="Digite seu nome ou o nome da família" autocomplete="off">';
+      html += '</div>';
+      html += '<button class="btn" id="name-search-go" style="margin-top:12px;width:100%;">Buscar</button>';
+      html += '</div>';
+      return html;
+    }
+
+    if (existing){
+      html += '<div class="guest-name">' + esc(guestLabel(guest) || existing.label) + '</div>';
+      if (existing.attending){
+        var confirmedList = (existing.confirmedNames && existing.confirmedNames.length) ? esc(existing.confirmedNames.join(", ")) : "";
+        html += '<div class="msg-box msg-ok">Você confirmou presença'
+          + (confirmedList ? ' para: <b>' + confirmedList + '</b>' : '')
+          + (existing.extraAdults ? ' + ' + existing.extraAdults + ' acompanhante(s)' : '')
+          + (existing.kids ? ' + ' + existing.kids + ' criança(s)' : '') + '.'
+          + (existing.message ? '<br>Mensagem: "' + esc(existing.message) + '"' : '') + '</div>';
+      } else {
+        html += '<div class="msg-box msg-warn">Você marcou que não poderá comparecer. Sentiremos sua falta!</div>';
+      }
+      html += '<button class="btn" id="edit-rsvp" style="margin-top:14px;width:100%;">Alterar resposta</button>';
+      html += '</div>';
+      return html;
+    }
+
+    html += renderRsvpForm(guest);
+    html += '</div>';
+    return html;
+  }
+
+  function renderRsvpForm(guest){
+    var label = guestLabel(guest);
+    var showChecklist = guest.names && guest.names.length > 1;
+    var checklistHtml = "";
+    if (showChecklist){
+      checklistHtml += '<label class="field-label">Quem vai comparecer?</label>';
+      checklistHtml += '<div class="name-checklist">';
+      guest.names.forEach(function(n, i){
+        checklistHtml += '<label class="toggle-btn name-check active-yes" style="display:flex;align-items:center;gap:8px;justify-content:flex-start;margin-bottom:8px;">'
+          + '<input type="checkbox" class="f-name-check" data-name="' + esc(n) + '" checked style="width:auto;">'
+          + esc(n) + '</label>';
+      });
+      checklistHtml += '</div>';
+    }
+    return ''
+      + '<div class="guest-name">' + esc(label) + '</div>'
+      + '<form id="rsvp-form" data-slug="' + esc(guest.slug) + '" data-label="' + esc(label) + '">'
+      + (guest.adhoc ? '<label class="field-label">Confirme seu nome / família</label><input type="text" id="f-name" value="' + esc(label) + '" required>' : '')
+      + '<label class="field-label">Você vai poder comparecer?</label>'
+      + '<div class="toggle-row">'
+      + '<div class="toggle-btn" data-att="yes">Vou! 🎉</div>'
+      + '<div class="toggle-btn" data-att="no">Não vou 😔</div>'
+      + '</div>'
+      + '<div id="attending-extra" style="display:none;">'
+      + checklistHtml
+      + '<label class="field-label">' + (showChecklist ? 'Vai levar mais algum acompanhante (não listado acima)?' : 'Vai levar acompanhante(s)?') + '</label>'
+      + '<input type="number" id="f-extra-adults" min="0" value="0">'
+      + '<label class="field-label">' + (showChecklist ? 'Vai levar crianças (não listadas acima)?' : 'Vai levar crianças?') + '</label>'
+      + '<div class="toggle-row">'
+      + '<div class="toggle-btn" data-kids="yes">Sim</div>'
+      + '<div class="toggle-btn" data-kids="no">Não</div>'
+      + '</div>'
+      + '<div id="kids-extra" style="display:none;">'
+      + '<label class="field-label">Quantas crianças?</label>'
+      + '<input type="number" id="f-kids" min="1" value="1">'
+      + '</div>'
+      + '<label class="field-label">Mensagem para os noivos (opcional)</label>'
+      + '<textarea id="f-message" placeholder="Deixe um recado, um desejo ou uma mensagem de carinho..."></textarea>'
+      + '</div>'
+      + '<button type="submit" class="btn btn-primary" id="rsvp-submit" style="margin-top:20px;">Confirmar</button>'
+      + '<div id="rsvp-feedback"></div>'
+      + '</form>';
+  }
+
+  function wireRsvpSection(){
+    var searchGo = document.getElementById("name-search-go");
+    if (searchGo){
+      searchGo.addEventListener("click", function(){
+        var val = document.getElementById("name-search").value.trim();
+        if (!val) return;
+        var normVal = slugify(val);
+        var match = GUESTS.find(function(g){ return slugify(guestLabel(g)) === normVal || g.slug === normVal; });
+        var newSlug = match ? match.slug : normVal;
+        var url = new URL(location.href);
+        url.searchParams.set("g", newSlug);
+        if (!match) url.searchParams.set("nome", val);
+        location.href = url.toString();
+      });
+    }
+
+    var editBtn = document.getElementById("edit-rsvp");
+    if (editBtn){
+      editBtn.addEventListener("click", function(){
+        var slug = guestSlugParam;
+        var newState = Object.assign({}, STATE);
+        delete newState[slug];
+        STATE = newState;
+        renderApp();
+      });
+    }
+
+    var form = document.getElementById("rsvp-form");
+    if (!form) return;
+
+    var attYes = form.querySelector('[data-att="yes"]');
+    var attNo = form.querySelector('[data-att="no"]');
+    var extra = document.getElementById("attending-extra");
+    var attValue = null;
+    attYes.addEventListener("click", function(){
+      attValue = true;
+      attYes.classList.add("active-yes"); attNo.classList.remove("active-no");
+      extra.style.display = "block";
+    });
+    attNo.addEventListener("click", function(){
+      attValue = false;
+      attNo.classList.add("active-no"); attYes.classList.remove("active-yes");
+      extra.style.display = "none";
+    });
+
+    var nameChecks = form.querySelectorAll(".f-name-check");
+    nameChecks.forEach(function(cb){
+      cb.addEventListener("change", function(){
+        cb.closest(".name-check").classList.toggle("active-yes", cb.checked);
+      });
+    });
+
+    var kidsYes = form.querySelector('[data-kids="yes"]');
+    var kidsNo = form.querySelector('[data-kids="no"]');
+    var kidsExtra = document.getElementById("kids-extra");
+    var kidsValue = false;
+    kidsYes.addEventListener("click", function(){
+      kidsValue = true;
+      kidsYes.classList.add("active-yes"); kidsNo.classList.remove("active-no");
+      kidsExtra.style.display = "block";
+    });
+    kidsNo.addEventListener("click", function(){
+      kidsValue = false;
+      kidsNo.classList.add("active-no"); kidsYes.classList.remove("active-yes");
+      kidsExtra.style.display = "none";
+    });
+
+    form.addEventListener("submit", function(ev){
+      ev.preventDefault();
+      if (attValue === null){
+        showFeedback("msg-warn", "Por favor, selecione se você vai comparecer.");
+        return;
+      }
+      var slug = form.getAttribute("data-slug");
+      var label = form.getAttribute("data-label");
+      var nameField = document.getElementById("f-name");
+      if (nameField) label = nameField.value.trim() || label;
+
+      var confirmedNames = [];
+      var checkedBoxes = form.querySelectorAll(".f-name-check:checked");
+      checkedBoxes.forEach(function(cb){ confirmedNames.push(cb.getAttribute("data-name")); });
+      if (!confirmedNames.length && attValue){
+        confirmedNames = [label];
+      }
+
+      var extraAdultsField = document.getElementById("f-extra-adults");
+
+      var record = {
+        label: label,
+        attending: attValue,
+        confirmedNames: attValue ? confirmedNames : [],
+        extraAdults: attValue ? Math.max(0, parseInt(extraAdultsField.value,10) || 0) : 0,
+        kids: (attValue && kidsValue) ? Math.max(1, parseInt(document.getElementById("f-kids").value,10) || 1) : 0,
+        message: attValue ? (document.getElementById("f-message").value || "").trim() : "",
+        respondedAt: new Date().toISOString()
+      };
+
+      submitRsvp(slug, record);
+    });
+  }
+
+  function showFeedback(cls, text){
+    var box = document.getElementById("rsvp-feedback");
+    if (!box) return;
+    box.innerHTML = '<div class="msg-box ' + cls + '">' + esc(text) + '</div>';
+  }
+
+  function submitRsvp(slug, record){
+    var btn = document.getElementById("rsvp-submit");
+    if (btn){ btn.disabled = true; btn.textContent = "Salvando..."; }
+    showFeedback("msg-info", "Salvando sua confirmação...");
+
+    artifactReady.then(function(api){
+      if (!api){
+        showFeedback("msg-warn", "Não foi possível salvar automaticamente sua confirmação neste link. Por favor, entre em contato com os noivos diretamente para confirmar sua presença.");
+        if (btn){ btn.disabled = false; btn.textContent = "Confirmar"; }
+        return;
+      }
+      var newState = Object.assign({}, STATE);
+      newState[slug] = record;
+      var newDoc;
+      try { newDoc = buildDoc(newState); }
+      catch(e){
+        showFeedback("msg-warn", "Ocorreu um erro ao preparar sua confirmação. Tente novamente.");
+        if (btn){ btn.disabled = false; btn.textContent = "Confirmar"; }
+        return;
+      }
+      api.publish(newDoc).then(function(){
+        showFeedback("msg-ok", "Confirmação salva! Obrigado, " + record.label + ".");
+      }).catch(function(err){
+        var code = err && err.code;
+        if (code === "conflict"){
+          showFeedback("msg-info", "Atualizando com as informações mais recentes...");
+          return;
+        }
+        if (code === "not_writer" || code === "not_granted" || code === "capability_disabled" || code === "not_declared" || code === "consent_required"){
+          showFeedback("msg-warn", "Não foi possível salvar automaticamente sua confirmação neste link. Por favor, entre em contato com os noivos diretamente para confirmar sua presença.");
+        } else {
+          showFeedback("msg-warn", "Não conseguimos salvar agora. Tente novamente em alguns segundos.");
+        }
+        if (btn){ btn.disabled = false; btn.textContent = "Confirmar"; }
+      });
+    });
+  }
+
+  function renderAdminGate(){
+    return ''
+      + '<div class="card">'
+      + '<h2 class="section-title">Painel dos noivos</h2>'
+      + '<p class="section-sub">Digite a senha para ver as confirmações</p>'
+      + '<input type="password" id="admin-pin" placeholder="Senha">'
+      + '<button class="btn btn-primary" id="admin-enter" style="margin-top:14px;">Entrar</button>'
+      + '<div id="admin-feedback"></div>'
+      + '</div>';
+  }
+
+  function isAdminUnlocked(){
+    try { return sessionStorage.getItem("wed-admin-ok") === "1"; }
+    catch(e){ return false; }
+  }
+  function setAdminUnlocked(){
+    try { sessionStorage.setItem("wed-admin-ok", "1"); } catch(e){}
+  }
+
+  function renderAdminPanel(){
+    var totalGuests = GUESTS.length;
+    var responded = 0, confirmedEntries = 0, totalPeople = 0, totalKids = 0;
+    GUESTS.forEach(function(g){
+      var r = STATE[g.slug];
+      if (r){
+        responded++;
+        if (r.attending){
+          confirmedEntries++;
+          totalPeople += ((r.confirmedNames && r.confirmedNames.length) || 0) + (r.extraAdults || 0);
+          totalKids += (r.kids || 0);
+        }
+      }
+    });
+    var pending = totalGuests - responded;
+
+    var html = '<div class="card">';
+    html += '<h2 class="section-title">Painel de confirmações</h2>';
+    html += '<div class="top-link"><a id="back-to-invite">&larr; Ver convite</a></div>';
+    html += '<div class="stats-grid" style="margin-top:18px;">';
+    html += '<div class="stat"><div class="n">' + confirmedEntries + '</div><div class="l">famílias confirmadas</div></div>';
+    html += '<div class="stat"><div class="n">' + totalPeople + '</div><div class="l">pessoas confirmadas</div></div>';
+    html += '<div class="stat"><div class="n">' + totalKids + '</div><div class="l">crianças</div></div>';
+    html += '<div class="stat"><div class="n">' + pending + '</div><div class="l">sem resposta ainda</div></div>';
+    html += '</div>';
+
+    html += '<div class="admin-table-wrap"><table class="admin-table"><thead><tr>'
+      + '<th>Convidado</th><th>Status</th><th>Quem vai</th><th>Crianças</th><th>Mensagem</th>'
+      + '</tr></thead><tbody>';
+    GUESTS.forEach(function(g){
+      var r = STATE[g.slug];
+      var statusHtml, peopleHtml, kidsHtml, msgHtml;
+      if (!r){
+        statusHtml = '<span class="status-pill status-pending">Pendente</span>';
+        peopleHtml = "-"; kidsHtml = "-"; msgHtml = "-";
+      } else if (r.attending){
+        statusHtml = '<span class="status-pill status-yes">Confirmado</span>';
+        var whoList = (r.confirmedNames || []).join(", ");
+        peopleHtml = esc(whoList) + (r.extraAdults ? ' + ' + r.extraAdults + ' acomp.' : '');
+        kidsHtml = r.kids || 0; msgHtml = esc(r.message || "-");
+      } else {
+        statusHtml = '<span class="status-pill status-no">Não vai</span>';
+        peopleHtml = "-"; kidsHtml = "-"; msgHtml = esc(r.message || "-");
+      }
+      html += '<tr><td>' + esc(guestLabel(g)) + '</td><td>' + statusHtml + '</td><td>' + peopleHtml + '</td><td>' + kidsHtml + '</td><td>' + msgHtml + '</td></tr>';
+    });
+    html += '</tbody></table></div></div>';
+
+    html += '<div class="card">';
+    html += '<h2 class="section-title">Links de cada convidado</h2>';
+    html += '<p class="section-sub">Copie e envie o link certo para cada convidado</p>';
+    var base = location.origin + location.pathname;
+    GUESTS.forEach(function(g){
+      var link = base + "?g=" + g.slug;
+      html += '<div class="link-row"><span class="lbl">' + esc(guestLabel(g)) + '</span><input type="text" readonly value="' + esc(link) + '" onclick="this.select()"></div>';
+    });
+    html += '</div>';
+
+    return html;
+  }
+
+  function wireAdminGate(){
+    var btn = document.getElementById("admin-enter");
+    var input = document.getElementById("admin-pin");
+    function tryEnter(){
+      if (input.value === PIN){
+        setAdminUnlocked();
+        renderApp();
+      } else {
+        document.getElementById("admin-feedback").innerHTML = '<div class="msg-box msg-warn">Senha incorreta.</div>';
+      }
+    }
+    btn.addEventListener("click", tryEnter);
+    input.addEventListener("keydown", function(e){ if (e.key === "Enter") tryEnter(); });
+  }
+
+  function wireAdminPanel(){
+    var back = document.getElementById("back-to-invite");
+    if (back){
+      back.addEventListener("click", function(){
+        var url = new URL(location.href);
+        url.searchParams.delete("painel");
+        location.href = url.toString();
+      });
+    }
+  }
+
+  function renderApp(){
+    var app = document.getElementById("app");
+    if (mode === "admin"){
+      if (!isAdminUnlocked()){
+        app.innerHTML = renderAdminGate();
+        wireAdminGate();
+      } else {
+        app.innerHTML = renderAdminPanel();
+        wireAdminPanel();
+      }
+      return;
+    }
+
+    app.innerHTML = renderInviteCard() + renderDetails() + renderCountdown() + renderRsvpSection();
+    startCountdown();
+    wireRsvpSection();
+  }
+
+  renderApp();
+})();
+</script>
+</body>
+</html>
