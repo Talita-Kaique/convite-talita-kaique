@@ -219,6 +219,7 @@
     mensagem: "entry.1164928874"
   };
   var SHEET_URL = "https://docs.google.com/spreadsheets/d/1wzkxOhB5tBfexNBt-9jd72wGftKEfHEvS_lMQIk5OSU/edit";
+  var GOOGLE_FORM_VIEW_URL = "https://docs.google.com/forms/d/e/1FAIpQLSez9wik2KLtLAbrhZN-0ptVfUEF07BGg2we1Rzz9lckYWQWUQ/viewform";
 
   var GUESTS = [
     {slug:"cris-rodrigo", names:["Cris","Rodrigo"]},
@@ -262,21 +263,6 @@
     return names.slice(0, -1).join(", ") + " e " + names[names.length - 1];
   }
   function guestLabel(guest){ return formatNames(guest.names); }
-
-  var ACCENT_MAP = {"á":"a","à":"a","ã":"a","â":"a","ä":"a","é":"e","è":"e","ê":"e","ë":"e","í":"i","ì":"i","î":"i","ï":"i","ó":"o","ò":"o","õ":"o","ô":"o","ö":"o","ú":"u","ù":"u","û":"u","ü":"u","ç":"c","ñ":"n"};
-  function removeAccents(s){
-    var out = "";
-    for (var i=0;i<s.length;i++){
-      var ch = s.charAt(i);
-      out += ACCENT_MAP[ch] || ch;
-    }
-    return out;
-  }
-  function slugify(s){
-    var base = removeAccents((s||"").toString().trim().toLowerCase());
-    var cleaned = base.replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"");
-    return cleaned || "convidado";
-  }
 
   function esc(s){
     return (s===undefined||s===null?"":String(s))
@@ -401,11 +387,8 @@
       : '<p class="section-sub">Por favor, confirme até <b>' + formatDateBR(RSVP_DEADLINE) + '</b>.</p>';
 
     if (!slug){
-      html += '<p class="section-sub">Não encontramos seu convite pelo link. Digite seu nome para localizar seu convite:</p>';
-      html += '<div class="datalist-wrap">';
-      html += '<input type="text" id="name-search" placeholder="Digite seu nome ou o nome da família" autocomplete="off">';
-      html += '</div>';
-      html += '<button class="btn" id="name-search-go" style="margin-top:12px;width:100%;">Buscar</button>';
+      html += '<p class="section-sub">Não encontramos seu convite pelo link. Confirme sua presença pelo formulário abaixo:</p>';
+      html += '<a class="btn btn-primary" href="' + GOOGLE_FORM_VIEW_URL + '" target="_blank" rel="noopener" style="display:block;text-align:center;text-decoration:none;">Confirmar presença</a>';
       html += '</div>';
       return html;
     }
@@ -460,21 +443,6 @@
   }
 
   function wireRsvpSection(){
-    var searchGo = document.getElementById("name-search-go");
-    if (searchGo){
-      searchGo.addEventListener("click", function(){
-        var val = document.getElementById("name-search").value.trim();
-        if (!val) return;
-        var normVal = slugify(val);
-        var match = GUESTS.find(function(g){ return slugify(guestLabel(g)) === normVal || g.slug === normVal; });
-        var newSlug = match ? match.slug : normVal;
-        var url = new URL(location.href);
-        url.searchParams.set("g", newSlug);
-        if (!match) url.searchParams.set("nome", val);
-        location.href = url.toString();
-      });
-    }
-
     var form = document.getElementById("rsvp-form");
     if (!form) return;
 
