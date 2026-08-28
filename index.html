@@ -204,18 +204,21 @@
 </head>
 <body>
 <div id="app"></div>
-<script id="rsvp-state" type="application/json">{}</script>
 <script>
 (function(){
   "use strict";
 
-  var ORIGINAL_HTML = document.documentElement.outerHTML;
-  var STATE_EL = document.getElementById('rsvp-state');
-  var STATE_RAW = STATE_EL.textContent;
-  var STATE;
-  try { STATE = JSON.parse(STATE_RAW); } catch(e){ STATE = {}; }
-
   var PIN = "16102026";
+
+  var GOOGLE_FORM_ACTION = "https://docs.google.com/forms/d/e/1FAIpQLSez9wik2KLtLAbrhZN-0ptVfUEF07BGg2we1Rzz9lckYWQWUQ/formResponse";
+  var ENTRY = {
+    nome: "entry.261200397",
+    comparecer: "entry.485418542",
+    extra: "entry.1955961546",
+    criancas: "entry.189985944",
+    mensagem: "entry.1164928874"
+  };
+  var SHEET_URL = "https://docs.google.com/spreadsheets/d/1wzkxOhB5tBfexNBt-9jd72wGftKEfHEvS_lMQIk5OSU/edit";
 
   var GUESTS = [
     {slug:"cris-rodrigo", names:["Cris","Rodrigo"]},
@@ -280,21 +283,6 @@
       .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
   }
 
-  function buildDoc(newState){
-    var newJson = JSON.stringify(newState);
-    var idx = ORIGINAL_HTML.indexOf(STATE_RAW);
-    if (idx === -1){
-      var reIdx = ORIGINAL_HTML.indexOf('id="rsvp-state" type="application/json">');
-      if (reIdx !== -1){
-        var start = reIdx + 'id="rsvp-state" type="application/json">'.length;
-        var end = ORIGINAL_HTML.indexOf('<' + '/script>', start);
-        return "<!doctype html>\n" + ORIGINAL_HTML.slice(0,start) + newJson + ORIGINAL_HTML.slice(end);
-      }
-      throw new Error("state anchor not found");
-    }
-    return "<!doctype html>\n" + ORIGINAL_HTML.slice(0, idx) + newJson + ORIGINAL_HTML.slice(idx + STATE_RAW.length);
-  }
-
   function mapsUrl(addr){
     return "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(addr);
   }
@@ -313,13 +301,6 @@
   var params = new URLSearchParams(location.search);
   var mode = params.get("painel") === "1" ? "admin" : "guest";
   var guestSlugParam = params.get("g") || "";
-
-  var artifactApi = null;
-  var artifactReady = (function(){
-    if (!window.claude || !window.claude.use){ return Promise.resolve(null); }
-    return window.claude.use("artifact").catch(function(){ return null; });
-  })();
-  artifactReady.then(function(a){ artifactApi = a; });
 
   function leafSvg(){
     return '<svg class="leaf-corner" viewBox="0 0 150 150" xmlns="http://www.w3.org/2000/svg">'
@@ -406,7 +387,6 @@
   function renderRsvpSection(){
     var slug = guestSlugParam;
     var guest = findGuestBySlug(slug);
-    var existing = slug ? STATE[slug] : null;
 
     if (!guest && slug){
       var typedName = params.get("nome") || "";
@@ -426,23 +406,6 @@
       html += '<input type="text" id="name-search" placeholder="Digite seu nome ou o nome da família" autocomplete="off">';
       html += '</div>';
       html += '<button class="btn" id="name-search-go" style="margin-top:12px;width:100%;">Buscar</button>';
-      html += '</div>';
-      return html;
-    }
-
-    if (existing){
-      html += '<div class="guest-name">' + esc(guestLabel(guest) || existing.label) + '</div>';
-      if (existing.attending){
-        var confirmedList = (existing.confirmedNames && existing.confirmedNames.length) ? esc(existing.confirmedNames.join(", ")) : "";
-        html += '<div class="msg-box msg-ok">Você confirmou presença'
-          + (confirmedList ? ' para: <b>' + confirmedList + '</b>' : '')
-          + (existing.extraAdults ? ' + ' + existing.extraAdults + ' acompanhante(s)' : '')
-          + (existing.kids ? ' + ' + existing.kids + ' criança(s)' : '') + '.'
-          + (existing.message ? '<br>Mensagem: "' + esc(existing.message) + '"' : '') + '</div>';
-      } else {
-        html += '<div class="msg-box msg-warn">Você marcou que não poderá comparecer. Sentiremos sua falta!</div>';
-      }
-      html += '<button class="btn" id="edit-rsvp" style="margin-top:14px;width:100%;">Alterar resposta</button>';
       html += '</div>';
       return html;
     }
@@ -512,17 +475,6 @@
       });
     }
 
-    var editBtn = document.getElementById("edit-rsvp");
-    if (editBtn){
-      editBtn.addEventListener("click", function(){
-        var slug = guestSlugParam;
-        var newState = Object.assign({}, STATE);
-        delete newState[slug];
-        STATE = newState;
-        renderApp();
-      });
-    }
-
     var form = document.getElementById("rsvp-form");
     if (!form) return;
 
@@ -569,7 +521,6 @@
         showFeedback("msg-warn", "Por favor, selecione se você vai comparecer.");
         return;
       }
-      var slug = form.getAttribute("data-slug");
       var label = form.getAttribute("data-label");
       var nameField = document.getElementById("f-name");
       if (nameField) label = nameField.value.trim() || label;
@@ -589,11 +540,10 @@
         confirmedNames: attValue ? confirmedNames : [],
         extraAdults: attValue ? Math.max(0, parseInt(extraAdultsField.value,10) || 0) : 0,
         kids: (attValue && kidsValue) ? Math.max(1, parseInt(document.getElementById("f-kids").value,10) || 1) : 0,
-        message: attValue ? (document.getElementById("f-message").value || "").trim() : "",
-        respondedAt: new Date().toISOString()
+        message: attValue ? (document.getElementById("f-message").value || "").trim() : ""
       };
 
-      submitRsvp(slug, record);
+      submitRsvp(record);
     });
   }
 
@@ -603,42 +553,34 @@
     box.innerHTML = '<div class="msg-box ' + cls + '">' + esc(text) + '</div>';
   }
 
-  function submitRsvp(slug, record){
+  function submitRsvp(record){
     var btn = document.getElementById("rsvp-submit");
-    if (btn){ btn.disabled = true; btn.textContent = "Salvando..."; }
-    showFeedback("msg-info", "Salvando sua confirmação...");
+    if (btn){ btn.disabled = true; btn.textContent = "Enviando..."; }
+    showFeedback("msg-info", "Enviando sua confirmação...");
 
-    artifactReady.then(function(api){
-      if (!api){
-        showFeedback("msg-warn", "Não foi possível salvar automaticamente sua confirmação neste link. Por favor, entre em contato com os noivos diretamente para confirmar sua presença.");
-        if (btn){ btn.disabled = false; btn.textContent = "Confirmar"; }
-        return;
-      }
-      var newState = Object.assign({}, STATE);
-      newState[slug] = record;
-      var newDoc;
-      try { newDoc = buildDoc(newState); }
-      catch(e){
-        showFeedback("msg-warn", "Ocorreu um erro ao preparar sua confirmação. Tente novamente.");
-        if (btn){ btn.disabled = false; btn.textContent = "Confirmar"; }
-        return;
-      }
-      api.publish(newDoc).then(function(){
-        showFeedback("msg-ok", "Confirmação salva! Obrigado, " + record.label + ".");
-      }).catch(function(err){
-        var code = err && err.code;
-        if (code === "conflict"){
-          showFeedback("msg-info", "Atualizando com as informações mais recentes...");
-          return;
+    var nomeValue = record.attending
+      ? (record.confirmedNames.join(", ") || record.label)
+      : record.label;
+
+    var formData = new FormData();
+    formData.append(ENTRY.nome, nomeValue);
+    formData.append(ENTRY.comparecer, record.attending ? "Sim" : "Não");
+    formData.append(ENTRY.extra, String(record.extraAdults || 0));
+    formData.append(ENTRY.criancas, String(record.kids || 0));
+    formData.append(ENTRY.mensagem, record.message || "");
+
+    fetch(GOOGLE_FORM_ACTION, { method: "POST", mode: "no-cors", body: formData })
+      .then(function(){
+        var card = document.getElementById("rsvp-card");
+        if (card){
+          card.innerHTML = '<h2 class="section-title">Confirmar presença</h2>'
+            + '<div class="msg-box msg-ok">Confirmação enviada! Obrigado, ' + esc(record.label) + '.</div>';
         }
-        if (code === "not_writer" || code === "not_granted" || code === "capability_disabled" || code === "not_declared" || code === "consent_required"){
-          showFeedback("msg-warn", "Não foi possível salvar automaticamente sua confirmação neste link. Por favor, entre em contato com os noivos diretamente para confirmar sua presença.");
-        } else {
-          showFeedback("msg-warn", "Não conseguimos salvar agora. Tente novamente em alguns segundos.");
-        }
+      })
+      .catch(function(){
+        showFeedback("msg-warn", "Não conseguimos enviar sua confirmação. Verifique sua internet e tente novamente.");
         if (btn){ btn.disabled = false; btn.textContent = "Confirmar"; }
       });
-    });
   }
 
   function renderAdminGate(){
@@ -662,51 +604,12 @@
 
   function renderAdminPanel(){
     var totalGuests = GUESTS.length;
-    var responded = 0, confirmedEntries = 0, totalPeople = 0, totalKids = 0;
-    GUESTS.forEach(function(g){
-      var r = STATE[g.slug];
-      if (r){
-        responded++;
-        if (r.attending){
-          confirmedEntries++;
-          totalPeople += ((r.confirmedNames && r.confirmedNames.length) || 0) + (r.extraAdults || 0);
-          totalKids += (r.kids || 0);
-        }
-      }
-    });
-    var pending = totalGuests - responded;
-
     var html = '<div class="card">';
     html += '<h2 class="section-title">Painel de confirmações</h2>';
     html += '<div class="top-link"><a id="back-to-invite">&larr; Ver convite</a></div>';
-    html += '<div class="stats-grid" style="margin-top:18px;">';
-    html += '<div class="stat"><div class="n">' + confirmedEntries + '</div><div class="l">famílias confirmadas</div></div>';
-    html += '<div class="stat"><div class="n">' + totalPeople + '</div><div class="l">pessoas confirmadas</div></div>';
-    html += '<div class="stat"><div class="n">' + totalKids + '</div><div class="l">crianças</div></div>';
-    html += '<div class="stat"><div class="n">' + pending + '</div><div class="l">sem resposta ainda</div></div>';
+    html += '<p class="section-sub" style="margin-top:18px;">Total de convites: ' + totalGuests + '</p>';
+    html += '<a class="btn btn-primary" href="' + SHEET_URL + '" target="_blank" rel="noopener" style="display:block;text-align:center;text-decoration:none;">Ver planilha de confirmações</a>';
     html += '</div>';
-
-    html += '<div class="admin-table-wrap"><table class="admin-table"><thead><tr>'
-      + '<th>Convidado</th><th>Status</th><th>Quem vai</th><th>Crianças</th><th>Mensagem</th>'
-      + '</tr></thead><tbody>';
-    GUESTS.forEach(function(g){
-      var r = STATE[g.slug];
-      var statusHtml, peopleHtml, kidsHtml, msgHtml;
-      if (!r){
-        statusHtml = '<span class="status-pill status-pending">Pendente</span>';
-        peopleHtml = "-"; kidsHtml = "-"; msgHtml = "-";
-      } else if (r.attending){
-        statusHtml = '<span class="status-pill status-yes">Confirmado</span>';
-        var whoList = (r.confirmedNames || []).join(", ");
-        peopleHtml = esc(whoList) + (r.extraAdults ? ' + ' + r.extraAdults + ' acomp.' : '');
-        kidsHtml = r.kids || 0; msgHtml = esc(r.message || "-");
-      } else {
-        statusHtml = '<span class="status-pill status-no">Não vai</span>';
-        peopleHtml = "-"; kidsHtml = "-"; msgHtml = esc(r.message || "-");
-      }
-      html += '<tr><td>' + esc(guestLabel(g)) + '</td><td>' + statusHtml + '</td><td>' + peopleHtml + '</td><td>' + kidsHtml + '</td><td>' + msgHtml + '</td></tr>';
-    });
-    html += '</tbody></table></div></div>';
 
     html += '<div class="card">';
     html += '<h2 class="section-title">Links de cada convidado</h2>';
