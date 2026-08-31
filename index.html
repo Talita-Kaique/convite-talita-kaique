@@ -222,6 +222,8 @@
   var GOOGLE_FORM_VIEW_URL = "https://docs.google.com/forms/d/e/1FAIpQLSez9wik2KLtLAbrhZN-0ptVfUEF07BGg2we1Rzz9lckYWQWUQ/viewform";
 
   var GUESTS = [
+    {slug:"noivo-kaique", names:["Kaique"]},
+    {slug:"noiva-talita", names:["Talita"]},
     {slug:"cris-rodrigo", names:["Cris","Rodrigo"]},
     {slug:"cristiano-natalia", names:["Cristiano","Natália"]},
     {slug:"leo-amanda", names:["Léo","Amanda"]},
@@ -396,6 +398,7 @@
     if (hasAlreadySubmitted(slug)){
       html += '<div class="guest-name">' + esc(guestLabel(guest)) + '</div>';
       html += '<div class="msg-box msg-ok">Sua confirmação já foi registrada. Obrigado!</div>';
+      html += '<button class="btn" id="reset-rsvp" style="margin-top:14px;width:100%;">Alterar resposta</button>';
       html += '</div>';
       return html;
     }
@@ -459,6 +462,14 @@
   }
 
   function wireRsvpSection(){
+    var resetBtn = document.getElementById("reset-rsvp");
+    if (resetBtn){
+      resetBtn.addEventListener("click", function(){
+        try { localStorage.removeItem(submittedKey(guestSlugParam)); } catch(e){}
+        renderApp();
+      });
+    }
+
     var form = document.getElementById("rsvp-form");
     if (!form) return;
 
@@ -657,4 +668,3 @@
 </script>
 </body>
 </html>
-
