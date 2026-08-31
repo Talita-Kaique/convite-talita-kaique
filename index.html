@@ -214,8 +214,8 @@
   var ENTRY = {
     nome: "entry.261200397",
     comparecer: "entry.485418542",
-    extra: "entry.1955961546",
     criancas: "entry.189985944",
+    idadeCriancas: "entry.912281127",
     mensagem: "entry.1164928874"
   };
   var SHEET_URL = "https://docs.google.com/spreadsheets/d/1wzkxOhB5tBfexNBt-9jd72wGftKEfHEvS_lMQIk5OSU/edit";
@@ -276,7 +276,7 @@
   var ADDR_CIVIL = "Avenida Tiradentes, 83 - Cambuí - MG";
   var ADDR_JANTAR = "Avenida Vereador Benedito Rodrigues, 126 - Córrego do Bom Jesus - MG (Café com Flor)";
   var WEDDING_DATE = new Date(2026,9,16,16,30,0);
-  var RSVP_DEADLINE = new Date(2026,9,2,23,59,59);
+  var RSVP_DEADLINE = new Date(2026,8,20,23,59,59);
 
   function formatDateBR(d){
     var dd = String(d.getDate()).padStart(2,"0");
@@ -393,9 +393,25 @@
       return html;
     }
 
+    if (hasAlreadySubmitted(slug)){
+      html += '<div class="guest-name">' + esc(guestLabel(guest)) + '</div>';
+      html += '<div class="msg-box msg-ok">Sua confirmação já foi registrada. Obrigado!</div>';
+      html += '</div>';
+      return html;
+    }
+
     html += renderRsvpForm(guest);
     html += '</div>';
     return html;
+  }
+
+  function submittedKey(slug){ return "wed-rsvp-done-" + slug; }
+  function hasAlreadySubmitted(slug){
+    try { return localStorage.getItem(submittedKey(slug)) === "1"; }
+    catch(e){ return false; }
+  }
+  function markSubmitted(slug){
+    try { localStorage.setItem(submittedKey(slug), "1"); } catch(e){}
   }
 
   function renderRsvpForm(guest){
@@ -423,8 +439,6 @@
       + '</div>'
       + '<div id="attending-extra" style="display:none;">'
       + checklistHtml
-      + '<label class="field-label">' + (showChecklist ? 'Vai levar mais algum acompanhante (não listado acima)?' : 'Vai levar acompanhante(s)?') + '</label>'
-      + '<input type="number" id="f-extra-adults" min="0" value="0">'
       + '<label class="field-label">' + (showChecklist ? 'Vai levar crianças (não listadas acima)?' : 'Vai levar crianças?') + '</label>'
       + '<div class="toggle-row">'
       + '<div class="toggle-btn" data-kids="yes">Sim</div>'
@@ -433,6 +447,8 @@
       + '<div id="kids-extra" style="display:none;">'
       + '<label class="field-label">Quantas crianças?</label>'
       + '<input type="number" id="f-kids" min="1" value="1">'
+      + '<label class="field-label">Idade(s) das crianças</label>'
+      + '<input type="text" id="f-kids-ages" placeholder="Ex: 5, 8">'
       + '</div>'
       + '<label class="field-label">Mensagem para os noivos (opcional)</label>'
       + '<textarea id="f-message" placeholder="Deixe um recado, um desejo ou uma mensagem de carinho..."></textarea>'
@@ -489,6 +505,7 @@
         showFeedback("msg-warn", "Por favor, selecione se você vai comparecer.");
         return;
       }
+      var slug = form.getAttribute("data-slug");
       var label = form.getAttribute("data-label");
       var nameField = document.getElementById("f-name");
       if (nameField) label = nameField.value.trim() || label;
@@ -500,18 +517,16 @@
         confirmedNames = [label];
       }
 
-      var extraAdultsField = document.getElementById("f-extra-adults");
-
       var record = {
         label: label,
         attending: attValue,
         confirmedNames: attValue ? confirmedNames : [],
-        extraAdults: attValue ? Math.max(0, parseInt(extraAdultsField.value,10) || 0) : 0,
         kids: (attValue && kidsValue) ? Math.max(1, parseInt(document.getElementById("f-kids").value,10) || 1) : 0,
+        kidsAges: (attValue && kidsValue) ? (document.getElementById("f-kids-ages").value || "").trim() : "",
         message: attValue ? (document.getElementById("f-message").value || "").trim() : ""
       };
 
-      submitRsvp(record);
+      submitRsvp(slug, record);
     });
   }
 
@@ -521,7 +536,7 @@
     box.innerHTML = '<div class="msg-box ' + cls + '">' + esc(text) + '</div>';
   }
 
-  function submitRsvp(record){
+  function submitRsvp(slug, record){
     var btn = document.getElementById("rsvp-submit");
     if (btn){ btn.disabled = true; btn.textContent = "Enviando..."; }
     showFeedback("msg-info", "Enviando sua confirmação...");
@@ -533,12 +548,13 @@
     var formData = new FormData();
     formData.append(ENTRY.nome, nomeValue);
     formData.append(ENTRY.comparecer, record.attending ? "Sim" : "Não");
-    formData.append(ENTRY.extra, String(record.extraAdults || 0));
     formData.append(ENTRY.criancas, String(record.kids || 0));
+    formData.append(ENTRY.idadeCriancas, record.kidsAges || "");
     formData.append(ENTRY.mensagem, record.message || "");
 
     fetch(GOOGLE_FORM_ACTION, { method: "POST", mode: "no-cors", body: formData })
       .then(function(){
+        markSubmitted(slug);
         var card = document.getElementById("rsvp-card");
         if (card){
           card.innerHTML = '<h2 class="section-title">Confirmar presença</h2>'
